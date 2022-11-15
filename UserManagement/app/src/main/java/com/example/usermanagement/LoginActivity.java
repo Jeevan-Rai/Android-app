@@ -5,16 +5,26 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.usermanagement.ModelResponse.LoginResponse;
+
+import java.util.regex.Pattern;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
     TextView registerlink;
-    EditText email, password;
+    EditText loginemail, loginpassword;
     Button login;
 
     @Override
@@ -30,15 +40,57 @@ public class LoginActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
-        email = findViewById(R.id.loginemail);
-        password = findViewById(R.id.loginpassword);
+        loginemail = findViewById(R.id.loginemail);
+        loginpassword = findViewById(R.id.loginpassword);
         login = findViewById(R.id.btnlogin);
         registerlink = findViewById(R.id.registerlink);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                String email = loginemail.getText().toString();
+                String password = loginpassword.getText().toString();
+
+                if (email.isEmpty()){
+                    loginemail.requestFocus();
+                    loginemail.setError("Enter email address");
+                    return;
+                }
+
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                    loginemail.requestFocus();
+                    loginemail.setError("Enter valid email");
+                    return;
+                }
+
+                if (password.isEmpty()){
+                    loginpassword.requestFocus();
+                    loginpassword.setError("Enter password");
+                    return;
+                }
+
+                Call<LoginResponse> call = RetrofitClient.getInstance().getapi().login(email, password);
+                call.enqueue(new Callback<LoginResponse>() {
+                    @Override
+                    public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                        LoginResponse loginResponse = response.body();
+                        if (response.isSuccessful()){
+                            Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                        }
+
+                        else {
+                            Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<LoginResponse> call, Throwable t) {
+                        Toast.makeText(LoginActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+//                startActivity(new Intent(LoginActivity.this, HomeActivity.class));
             }
         });
 

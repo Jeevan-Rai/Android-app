@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -11,10 +12,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.usermanagement.ModelResponse.RegisterResponse;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity{
 
     TextView loginlink;
-    EditText name, email, password;
+    EditText name;
+    EditText etemail;
+    EditText etpassword;
     Button register;
 
     @Override
@@ -32,15 +41,15 @@ public class MainActivity extends AppCompatActivity{
 
 
         name = findViewById(R.id.etname);
-        email = findViewById(R.id.etemail);
-        password = findViewById(R.id.etpassword);
+        etemail = findViewById(R.id.etemail);
+        etpassword = findViewById(R.id.etpassword);
         register = findViewById(R.id.btnregister);
         loginlink = findViewById(R.id.loginlink);
 
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(MainActivity.this, "Registered", Toast.LENGTH_SHORT).show();
+                registerUser();
             }
         });
 
@@ -52,7 +61,62 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+    }
 
+    private void registerUser() {
+        String username = name.getText().toString();
+        String email = etemail.getText().toString();
+        String password = etpassword.getText().toString();
+
+        if(username.isEmpty()){
+            name.requestFocus();
+            name.setError("Enter your name");
+            return;
+        }
+
+        if (email.isEmpty()){
+            etemail.requestFocus();
+            etemail.setError("Enter your email");
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+            etemail.requestFocus();
+            etemail.setError("Enter correct email");
+            return;
+        }
+
+        if (password.isEmpty()){
+            etpassword.requestFocus();
+            etpassword.setError("Enter password");
+            return;
+        }
+
+        if (password.length() < 8){
+            etpassword.requestFocus();
+            etpassword.setError("Password should be greater than 8 characters");
+            return;
+        }
+        Call<RegisterResponse> call = RetrofitClient.getInstance().getapi().register(username,email,password);
+        call.enqueue(new Callback<RegisterResponse>() {
+            @Override
+            public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response) {
+                RegisterResponse registerResponse = response.body();
+                if (response.isSuccessful()){
+                    Toast.makeText(MainActivity.this, registerResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this,LoginActivity.class));
+                }
+
+                else {
+                    Toast.makeText(MainActivity.this, registerResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RegisterResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 }
