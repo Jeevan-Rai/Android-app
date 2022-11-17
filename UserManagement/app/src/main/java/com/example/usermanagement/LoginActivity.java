@@ -75,10 +75,16 @@ public class LoginActivity extends AppCompatActivity {
                     public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                         LoginResponse loginResponse = response.body();
                         if (response.isSuccessful()){
-                            Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                            if (loginResponse.getUser()!=null) {
+                                Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                            }
+                            else {
+                                Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
                         }
-
                         else {
                             Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
                         }
