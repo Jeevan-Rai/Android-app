@@ -26,6 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     TextView registerlink;
     EditText loginemail, loginpassword;
     Button login;
+    SharedPrefManager sharedPrefManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         loginpassword = findViewById(R.id.loginpassword);
         login = findViewById(R.id.btnlogin);
         registerlink = findViewById(R.id.registerlink);
+        sharedPrefManager = new SharedPrefManager(getApplicationContext());
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,6 +78,7 @@ public class LoginActivity extends AppCompatActivity {
                         LoginResponse loginResponse = response.body();
                         if (response.isSuccessful()){
                             if (loginResponse.getUser()!=null) {
+                                sharedPrefManager.SaveUser(loginResponse.getUser());
                                 Toast.makeText(LoginActivity.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -107,6 +110,16 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (sharedPrefManager.isLoggedIn()) {
+            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
     }
 }
