@@ -1,5 +1,7 @@
 package com.example.usermanagement.ModelResponse;
 
+import android.widget.Button;
+
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -25,4 +27,12 @@ public interface Api {
 
     @GET("fetchall.php")
     Call<FetchUserResponse> fetchUser();
+
+    @FormUrlEncoded
+    @POST("updateuser.php")
+    Call<UpdateResponse> update(
+            @Field("id") int id,
+            @Field("uname") String uname,
+            @Field("email") String email
+    );
 }
