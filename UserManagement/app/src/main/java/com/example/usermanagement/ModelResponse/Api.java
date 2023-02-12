@@ -35,4 +35,10 @@ public interface Api {
             @Field("uname") String uname,
             @Field("email") String email
     );
+
+    @FormUrlEncoded
+    @POST("deleteuser.php")
+    Call<DeleteResponse> delete(
+            @Field("id") int id
+    );
 }
